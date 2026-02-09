@@ -233,7 +233,7 @@ const getAllAgents = async (req, res) => {
                 agent_phone: profile?.agent_phone || user.user_phone,
                 avatar_url: profile?.avatar_url || user.profile_picture,
                 agent_role: profile?.agent_role || 'Agent',
-                agent_password: profile?.agent_password || '',
+                // agent_password: profile?.agent_password || '',
                 slug: profile?.slug || '',
                 status: profile?.status || user.status || 'active'
             };

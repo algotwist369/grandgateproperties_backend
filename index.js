@@ -41,6 +41,9 @@ if (cluster.isMaster) {
     // Worker Process
     const app = express();
 
+    // Trust Proxy (for Nginx/Cloudflare)
+    app.set('trust proxy', 1);
+
     // Connect to database (each worker needs its own connection)
     connectDB();
 
