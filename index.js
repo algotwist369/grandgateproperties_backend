@@ -42,7 +42,7 @@ if (cluster.isMaster) {
     const app = express();
 
     // Trust Proxy (for Nginx/Cloudflare)
-    app.set('trust proxy', 1);
+    app.set('trust proxy', true);
 
     // Connect to database (each worker needs its own connection)
     connectDB();
@@ -78,7 +78,7 @@ if (cluster.isMaster) {
     app.use(cookieParser());
 
     // Body parser
-    app.use(express.json({ limit: '50mb' }));  
+    app.use(express.json({ limit: '50mb' }));
     app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
     // Sanitize data (NoSQL Injection)
@@ -91,7 +91,8 @@ if (cluster.isMaster) {
     const limiter = rateLimit({
         windowMs: 10 * 60 * 1000, // 10 minutes
         max: 100, // Limit each IP to 100 requests per windowMs
-        message: 'Too many requests from this IP, please try again after 10 minutes'
+        message: 'Too many requests from this IP, please try again after 10 minutes',
+        validate: { xForwardedForHeader: false }, // Avoid validation errors behind proxy
     });
     app.use(limiter);
 
