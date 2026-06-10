@@ -33,7 +33,24 @@ const getAgentProfile = async (req, res) => {
             });
         }
 
-        res.json(agent);
+        const profile = {
+            ...agent.toObject(),
+            agent_name: agent.agent_name || req.user.user_name,
+            agent_email: agent.agent_email || req.user.user_email,
+            agent_phone: agent.agent_phone || req.user.user_phone,
+            avatar_url: agent.avatar_url || req.user.profile_picture || 'uploads/default-avatar.png',
+            agent_role: agent.agent_role || 'Agent',
+            agent_location: agent.agent_location || '',
+            agent_bio: agent.agent_bio || '',
+            experience: agent.experience || '',
+            languages: Array.isArray(agent.languages) ? agent.languages : [],
+            communities: Array.isArray(agent.communities) ? agent.communities : [],
+            specialties: Array.isArray(agent.specialties) ? agent.specialties : [],
+            agent_portfolio: Array.isArray(agent.agent_portfolio) ? agent.agent_portfolio : [],
+            status: agent.status || 'active'
+        };
+
+        res.json(profile);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -253,13 +270,32 @@ const getAllAgents = async (req, res) => {
 const getAgentBySlug = async (req, res) => {
     try {
         const agent = await Agent.findOne({ slug: req.params.slug })
-            .select('agent_name agent_email agent_phone agent_location agent_bio experience languages communities specialties agent_portfolio slug user_id avatar_url agent_password status createdAt updatedAt');
+            .select('agent_name agent_email agent_phone agent_location agent_role agent_bio experience languages communities specialties agent_portfolio slug user_id avatar_url status createdAt updatedAt');
 
-        if (agent) {
-            res.json(agent);
-        } else {
-            res.status(404).json({ message: 'Agent not found' });
+        if (!agent) {
+            return res.status(404).json({ message: 'Agent not found' });
         }
+
+        const user = agent.user_id ? await User.findById(agent.user_id).select('user_name user_email user_phone profile_picture') : null;
+
+        const profile = {
+            ...agent.toObject(),
+            agent_name: agent.agent_name || user?.user_name || '',
+            agent_email: agent.agent_email || user?.user_email || '',
+            agent_phone: agent.agent_phone || user?.user_phone || '',
+            avatar_url: agent.avatar_url || user?.profile_picture || 'uploads/default-avatar.png',
+            agent_role: agent.agent_role || 'Agent',
+            agent_location: agent.agent_location || '',
+            agent_bio: agent.agent_bio || '',
+            experience: agent.experience || '',
+            languages: Array.isArray(agent.languages) ? agent.languages : [],
+            communities: Array.isArray(agent.communities) ? agent.communities : [],
+            specialties: Array.isArray(agent.specialties) ? agent.specialties : [],
+            agent_portfolio: Array.isArray(agent.agent_portfolio) ? agent.agent_portfolio : [],
+            status: agent.status || 'active'
+        };
+
+        res.json(profile);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
